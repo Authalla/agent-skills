@@ -288,13 +288,53 @@ After creating the client, analyze the user's codebase to suggest how to integra
 2. Look at the tech stack (React, Next.js, Express, Go, etc.)
 3. Suggest the appropriate integration approach
 
-For common frameworks, provide specific guidance:
-- **Next.js**: Use `next-auth` with OIDC provider
-- **React SPA**: Use `oidc-client-ts` or `react-oidc-context`
-- **Express/Node**: Use `passport-openidconnect`
-- **Go**: Use `coreos/go-oidc`
+#### OIDC Discovery Check
 
-Provide the OIDC configuration values:
+Before writing integration code, **always fetch the tenant's OIDC discovery document** to check supported features:
+
+```bash
+curl -s https://TENANT_ID.authalla.com/.well-known/openid-configuration
+```
+
+Check these fields and configure the integration accordingly:
+- `token_endpoint_auth_methods_supported` — determines how the client authenticates at the token endpoint (e.g. `client_secret_post`, `client_secret_basic`)
+- `code_challenge_methods_supported` — if `S256` is listed, PKCE is supported and should be enabled
+- `response_types_supported` — verify `code` is supported (authorization code flow)
+
+#### Security Requirements
+
+Authalla integrations **must** use both `state` and `pkce` checks:
+- **state**: CSRF protection — a random value sent in the authorization request and validated on callback
+- **pkce** (S256): Proof Key for Code Exchange — prevents authorization code interception attacks
+
+For confidential clients (application_type `web` or `backend`), also configure the token endpoint authentication method to `client_secret_post` (sends `client_id` and `client_secret` in the request body rather than the Authorization header).
+
+#### Framework-Specific Guidance
+
+- **Next.js (Auth.js / next-auth v5)**: Use a custom OIDC provider. Install `next-auth@beta`. Configure with:
+  ```typescript
+  {
+    id: "authalla",
+    name: "Authalla",
+    type: "oidc",
+    issuer: process.env.AUTH_AUTHALLA_ISSUER,
+    clientId: process.env.AUTH_AUTHALLA_ID,
+    clientSecret: process.env.AUTH_AUTHALLA_SECRET,
+    checks: ["state", "pkce"],
+    client: {
+      token_endpoint_auth_method: "client_secret_post",
+    },
+  }
+  ```
+  **Important:** The `client` property sets the `token_endpoint_auth_method` at the oauth4webapi level. Do NOT use `token.clientAuthentication` — it may not be applied correctly.
+
+- **React SPA**: Use `oidc-client-ts` or `react-oidc-context`. Enable PKCE (default in oidc-client-ts). Set `response_type: "code"`.
+- **Express/Node**: Use `passport-openidconnect`. Configure with PKCE enabled and `tokenEndpointAuthMethod: "client_secret_post"`.
+- **Go**: Use `coreos/go-oidc` with `golang.org/x/oauth2`. Enable PKCE with S256 challenge method.
+
+#### OIDC Configuration Values
+
+Provide these to the user:
 ```
 OIDC Configuration:
 - Issuer URL: https://TENANT_ID.authalla.com (or https://auth.example.com if custom domain)
@@ -303,6 +343,8 @@ OIDC Configuration:
 - Client Secret: secret_xxx (for confidential clients)
 - Redirect URI: http://localhost:3000/callback
 - Scopes: openid profile email
+- Checks: state, pkce (S256)
+- Token auth method: client_secret_post
 ```
 
 ### Step 9: Summary
