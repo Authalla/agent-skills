@@ -52,10 +52,12 @@ brew install authalla
 
 ```bash
 authalla config set \
-  --api-url https://api.authalla.com \
+  --api-url https://TENANT_ID.authalla.com \
   --client-id CLIENT_ID \
   --client-secret CLIENT_SECRET
 ```
+
+**Important about the API URL:** The CLI must be configured with the **tenant-specific** URL (`https://TENANT_ID.authalla.com`), where the tenant ID is the subdomain. The user can find their tenant ID by opening the tenant in the Authalla Admin UI — the ID is shown in the URL and at the top of the page.
 
 **Important:** Never ask the user to paste credentials directly into the chat. Ask them to run the config command themselves if they prefer, or use AskUserQuestion to collect the values.
 
@@ -63,6 +65,15 @@ Once configured, verify it works by listing tenants:
 
 ```bash
 authalla tenant list
+```
+
+If you get a `403 Forbidden` or a response containing "does not match tenant domains", the API URL is wrong. Check the error message — it usually includes the correct tenant domain (e.g., `public: xyz.authalla.com`). Reconfigure with the correct URL:
+
+```bash
+authalla config set \
+  --api-url https://CORRECT_TENANT_ID.authalla.com \
+  --client-id CLIENT_ID \
+  --client-secret CLIENT_SECRET
 ```
 
 ### Step 2: Discover Tenant
