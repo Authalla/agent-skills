@@ -105,11 +105,30 @@ To see all available theme fields:
 authalla theme schema update
 ```
 
-After determining colors, update the theme:
+Before applying colors, ask the user whether they want to set colors for light mode only, dark mode only, or both. Use AskUserQuestion:
+- Light mode only
+- Dark mode only
+- Both light and dark mode
+
+The theme supports separate `dark` overrides. When setting both, provide all values in a single update to avoid one mode being cleared:
+
+```bash
+authalla theme update --json '{"primary_color": "#HEX_COLOR", "background_color": "#ffffff", "text_color": "#111827", "dark": {"primary_color": "#HEX_COLOR", "background_color": "#1a1a2e", "text_color": "#f8fafc"}}'
+```
+
+For light mode only:
 
 ```bash
 authalla theme update --json '{"primary_color": "#HEX_COLOR", "background_color": "#ffffff", "text_color": "#111827"}'
 ```
+
+For dark mode only:
+
+```bash
+authalla theme update --json '{"dark": {"primary_color": "#HEX_COLOR", "background_color": "#1a1a2e", "text_color": "#f8fafc"}}'
+```
+
+**Important:** The API replaces the entire theme on each update. Always include all fields (both light and dark) in a single call to avoid clearing previously set values.
 
 ### Step 4: Custom Domain (Optional)
 
@@ -357,6 +376,21 @@ OIDC Configuration:
 - Checks: state, pkce (S256)
 - Token auth method: client_secret_post
 ```
+
+#### Logout Integration
+
+Authalla's `end_session_endpoint` requires both `client_id` and `post_logout_redirect_uri` as query parameters. Without these, the logout request will fail. Optionally include `id_token_hint` to skip the logout confirmation screen.
+
+The logout URL format is:
+```
+https://TENANT_ID.authalla.com/oauth2/logout?client_id=CLIENT_ID&post_logout_redirect_uri=REDIRECT_URI&id_token_hint=ID_TOKEN
+```
+
+For **Next.js (Auth.js)**, this means:
+1. Store the `id_token` from the OIDC token response in the session via the `jwt` and `session` callbacks
+2. On sign out, build the Authalla logout URL with `client_id`, `post_logout_redirect_uri`, and `id_token_hint`, then pass it as `redirectTo` to `signOut()`
+3. Add a `redirect` callback that allows external redirects to the Authalla issuer domain
+4. The `post_logout_redirect_uri` must match one of the `allowed_logout_uris` configured on the OAuth2 client
 
 ### Step 9: Summary
 
