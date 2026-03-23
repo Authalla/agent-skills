@@ -254,10 +254,12 @@ Ask the user if they want to enable social login (e.g., "Sign in with Google"). 
 
 For each selected provider, explain what credentials are needed and where to get them:
 
-- **Google**: Create OAuth2 credentials at https://console.cloud.google.com/apis/credentials. You need the Client ID and Client Secret. Set the authorized redirect URI to `https://TENANT_ID.authalla.com/oauth2/social/google/callback` (or `https://auth.example.com/oauth2/social/google/callback` if custom domain is set up).
-- **GitHub**: Create an OAuth App at https://github.com/settings/developers. Set the callback URL to `https://TENANT_ID.authalla.com/oauth2/social/github/callback`.
-- **Apple**: Create a Services ID at https://developer.apple.com. Callback URL: `https://TENANT_ID.authalla.com/oauth2/social/apple/callback`.
-- **Microsoft**: Register an app at https://portal.azure.com. Redirect URI: `https://TENANT_ID.authalla.com/oauth2/social/microsoft/callback`.
+All providers use the same callback URL: `https://TENANT_ID.authalla.com/oauth2/social-login-callback` (or `https://auth.example.com/oauth2/social-login-callback` if custom domain is set up).
+
+- **Google**: Create OAuth2 credentials at https://console.cloud.google.com/apis/credentials. You need the Client ID and Client Secret. Set the authorized redirect URI to the callback URL above.
+- **GitHub**: Create an OAuth App at https://github.com/settings/developers. Set the callback URL to the callback URL above.
+- **Apple**: Create a Services ID at https://developer.apple.com. Set the callback URL to the callback URL above.
+- **Microsoft**: Register an app at https://portal.azure.com. Set the redirect URI to the callback URL above.
 
 To see the full schema:
 
