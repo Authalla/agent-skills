@@ -3,7 +3,7 @@ name: authalla
 description: Set up Authalla authentication for your app. Connects your project to Authalla OAuth2/OIDC — configures branding, custom domain, email, social login, and creates your OAuth2 client. Then analyzes your codebase and implements a secure, OAuth 2.1-compliant integration.
 metadata:
   author: authalla
-  version: "1.2.0"
+  version: "1.3.0"
 allowed-tools: Bash, AskUserQuestion, Read, Glob, Grep, Edit, Write
 ---
 
@@ -23,8 +23,7 @@ Use this skill when the user wants to:
 
 The user must have:
 1. An Authalla account (sign up at https://authalla.com)
-2. A Backend Service client with `client_id` and `client_secret` (created automatically on signup, visible in the Authalla Admin UI under API settings)
-3. The Authalla CLI installed:
+2. The Authalla CLI installed:
    ```bash
    brew tap authalla/tap
    brew install authalla
@@ -69,12 +68,12 @@ If the user's existing code uses any of these patterns, the agent must flag it a
 
 Execute these steps in order. Be conversational and guide the user through each step.
 
-### Step 1: Configure CLI
+### Step 1: Login
 
-First, check if the CLI is installed and configured:
+First, run `authalla login` directly. User tokens are short-lived, so always start with a fresh login unless one has already been performed in this session:
 
 ```bash
-authalla config show
+authalla login
 ```
 
 **If this fails** (CLI not installed), tell the user to install it:
@@ -83,43 +82,51 @@ brew tap authalla/tap
 brew install authalla
 ```
 
-**If config is not set**, guide the user to configure credentials. **Never handle secrets directly** — instead, present the command template and ask the user to run it themselves with their actual credentials substituted in:
+Then run `authalla login` again.
 
-```bash
-authalla config set \
-  --api-url https://TENANT_ID.authalla.com \
-  --client-id CLIENT_ID \
-  --client-secret CLIENT_SECRET
-```
+The login flow will:
+1. Open the user's browser to the Authalla login page
+2. After authentication, redirect back to the CLI
+3. Automatically store access and refresh tokens securely in `~/.config/authalla/config.json`
+4. If the user has multiple accounts, prompt them to select one
+5. Auto-select the first tenant in the chosen account
 
-**Important about the API URL:** The CLI must be configured with the **tenant-specific** URL (`https://TENANT_ID.authalla.com`), where the tenant ID is the subdomain. The user can find their tenant ID by opening the tenant in the Authalla Admin UI — the ID is shown in the URL and at the top of the page.
+If the browser doesn't open automatically, the CLI will display a URL the user can copy and paste.
 
-**Security:** Never ask the user to paste credentials (client secrets, API keys) directly into the chat. Never embed literal secret values in CLI commands or JSON payloads that the agent executes. Always present command templates with placeholders and instruct the user to run them. The agent may handle non-secret identifiers like `client_id` and `tenant_id` directly.
+**Important:** Only run `authalla login` once per session. If login has already been performed earlier in this conversation, skip this step and proceed directly.
 
-Once configured, verify it works by listing tenants:
-
-```bash
-authalla tenant list
-```
-
-If you get a `403 Forbidden` or a response containing "does not match tenant domains", the API URL is wrong. Check the error message — it usually includes the correct tenant domain (e.g., `public: xyz.authalla.com`). Reconfigure with the correct URL:
-
-```bash
-authalla config set \
-  --api-url https://CORRECT_TENANT_ID.authalla.com \
-  --client-id CLIENT_ID \
-  --client-secret CLIENT_SECRET
-```
-
-### Step 2: Discover Tenant
-
-List the user's tenants:
+Once logged in, verify it works:
 
 ```bash
 authalla tenant list
 ```
 
-Store the first tenant's `id` and `name` for subsequent commands.
+### Step 2: Select Account and Tenant
+
+After login, the CLI automatically selects an account and tenant. To check the current selection:
+
+```bash
+authalla config show
+```
+
+If the user needs to switch accounts or tenants:
+
+**List available accounts:**
+```bash
+authalla accounts list
+```
+
+**Switch account:**
+```bash
+authalla accounts select <account-id>
+```
+
+**Switch tenant within the current account:**
+```bash
+authalla tenant select <tenant-id>
+```
+
+Store the active tenant's `id` and `name` for subsequent commands. You can get these from the `authalla config show` output or from `authalla tenant list`.
 
 ### Step 3: Brand Setup
 
@@ -760,7 +767,7 @@ Present a clear summary of everything that was set up:
 
 ## Important Notes
 
-- The CLI automatically manages access tokens (fetching, caching, and refreshing)
+- The CLI uses browser-based OAuth2 login (`authalla login`) — no client credentials are needed for CLI usage. The CLI automatically manages access tokens (fetching, caching, and refreshing via refresh tokens)
 - Use `authalla <resource> schema <operation>` to see the full JSON schema for any create/update operation
 - Use `authalla <resource> <operation> --help` for inline documentation with examples
 - **Security:** Never handle, embed, or re-display secret values (`client_secret`, API keys). Present command templates with placeholders and let the user substitute and run them. Non-secret identifiers (`client_id`, `tenant_id`) may be handled directly by the agent.
