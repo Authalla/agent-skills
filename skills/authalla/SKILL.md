@@ -3,7 +3,7 @@ name: authalla
 description: Set up Authalla authentication for your app. Connects your project to Authalla OAuth2/OIDC — configures branding, custom domain, email, social login, and creates your OAuth2 client. Then analyzes your codebase and implements a secure, OAuth 2.1-compliant integration.
 metadata:
   author: authalla
-  version: "1.3.0"
+  version: "1.4.0"
 allowed-tools: Bash, AskUserQuestion, Read, Glob, Grep, Edit, Write
 ---
 
@@ -23,11 +23,28 @@ Use this skill when the user wants to:
 
 The user must have:
 1. An Authalla account (sign up at https://authalla.com)
-2. The Authalla CLI installed:
-   ```bash
-   brew tap authalla/tap
-   brew install authalla
-   ```
+2. **Either** the Authalla MCP server connected **or** the Authalla CLI installed (see below)
+
+### MCP server (recommended)
+
+If the Authalla MCP server is connected (`https://login.authalla.com/mcp`), use the MCP tools directly for all tenant management steps (creating clients, configuring themes, domains, emails, social login). The MCP server handles authentication automatically via OAuth2 — no CLI installation needed.
+
+Check if the MCP server is available by looking for Authalla tools (e.g., `get_me`, `list_tenants`, `create_client`). If available, **skip CLI login (Step 1)** and use MCP tools instead of CLI commands throughout the flow. The mapping is straightforward:
+- `authalla tenant list` → `list_tenants` tool
+- `authalla tenant update` → `update_tenant` tool
+- `authalla theme update` → `update_theme` tool
+- `authalla client create` → `create_client` tool
+- `authalla custom-domain create/verify` → `create_custom_domain` / `verify_custom_domain` tools
+- `authalla custom-email create/verify` → `create_custom_email` / `verify_custom_email` tools
+- `authalla social-login create` → `create_social_login` tool
+
+### CLI fallback
+
+If the MCP server is not connected, install the Authalla CLI:
+```bash
+brew tap authalla/tap
+brew install authalla
+```
 
 ## OAuth 2.1 Security Policy
 
@@ -70,7 +87,9 @@ Execute these steps in order. Be conversational and guide the user through each 
 
 ### Step 1: Login
 
-First, run `authalla login` directly. User tokens are short-lived, so always start with a fresh login unless one has already been performed in this session:
+**If using MCP:** Skip this step — the MCP server handles authentication automatically. Verify connectivity by calling the `get_me` tool to see the user's accounts and tenants.
+
+**If using CLI:** Run `authalla login` directly. User tokens are short-lived, so always start with a fresh login unless one has already been performed in this session:
 
 ```bash
 authalla login
@@ -129,6 +148,8 @@ authalla tenant select <tenant-id>
 Store the active tenant's `id` and `name` for subsequent commands. You can get these from the `authalla config show` output or from `authalla tenant list`.
 
 ### Step 3: Brand Setup
+
+**If using MCP:** Use the `get_theme` tool to see current theme settings and `update_theme` tool to set colors. The MCP tools accept light and dark mode colors directly. Skip the CLI schema commands below and use the MCP tools instead.
 
 Ask the user about their brand. Use AskUserQuestion with these options:
 - "I'll provide brand colors manually" → Ask for all configurable colors
@@ -391,6 +412,10 @@ Ask the user about their application to create the right type of OAuth2 client.
 Use AskUserQuestion:
 - What is your application type? (SPA / Web App / Mobile/Native / Backend Service)
 - What is your application's URL? (for redirect URIs)
+
+**If using MCP:** Use the `create_client` tool with the application name, tenant ID, application type, and redirect URIs. The tool returns the client ID and secret (for confidential clients).
+
+**If using CLI:**
 
 To see all available fields:
 
@@ -767,6 +792,7 @@ Present a clear summary of everything that was set up:
 
 ## Important Notes
 
+- **MCP vs CLI:** If the Authalla MCP server is connected, prefer MCP tools over CLI commands for all management operations. MCP handles auth automatically and doesn't require CLI installation. The CLI is still needed for operations not covered by MCP (logo upload, schema introspection).
 - The CLI uses browser-based OAuth2 login (`authalla login`) — no client credentials are needed for CLI usage. The CLI automatically manages access tokens (fetching, caching, and refreshing via refresh tokens)
 - Use `authalla <resource> schema <operation>` to see the full JSON schema for any create/update operation
 - Use `authalla <resource> <operation> --help` for inline documentation with examples
