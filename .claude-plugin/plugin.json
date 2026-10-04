@@ -1,0 +1,10 @@
+{
+  "name": "authalla",
+  "description": "Add Authalla sign-in to your app, or protect your own MCP server with Authalla",
+  "author": {
+    "name": "Authalla",
+    "url": "https://authalla.com"
+  },
+  "homepage": "https://docs.authalla.com",
+  "repository": "https://github.com/Authalla/agent-skills"
+}
