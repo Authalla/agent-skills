@@ -12,11 +12,11 @@ npx skills add authalla/agent-skills
 
 ### authalla
 
-Set up Authalla authentication for your app through a guided interactive flow. Configures branding, custom domain, email, social login, and creates your OAuth2 client.
+Set up Authalla authentication for your app through a guided interactive flow. Configures your tenant (branding, custom domain, email, social login), creates your app, then writes and audits a secure OAuth 2.1 / OIDC integration for your stack.
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then `claude mcp login authalla`
 
 **Usage:** Once installed, Claude Code will automatically use this skill when you ask it to set up Authalla authentication.
 
@@ -26,6 +26,6 @@ Protect your own MCP server with Authalla: users sign in and approve Claude, Cha
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then `claude mcp login authalla`
 
 **Usage:** ask your agent to "protect my MCP server with Authalla". Guide: [Build an MCP server with Authalla](https://docs.authalla.com/docs/build-an-mcp-server).

@@ -24,8 +24,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 ```
 
 - The redirect URI to register on the app is `{app URL}/api/auth/callback/authalla`.
+- Env: the three `AUTH_AUTHALLA_*` names are the ones Auth.js reads for a provider with id `authalla`, plus `AUTH_SECRET` (generate it with `npx auth secret`).
+- Session: the default JWT strategy, chosen because it needs no database. The session is an `HttpOnly` cookie encrypted with `AUTH_SECRET`, and this config puts the profile in it, no tokens. An app that calls an API with the access token copies the tokens in the `jwt` callback, where they stay encrypted; if the app already has a database with an Auth.js adapter, `session: { strategy: "database" }` keeps them server-side instead.
 - Sign-out: build the end-session URL (`client_id` and `post_logout_redirect_uri`) in a server action, call `signOut({ redirectTo: endSessionUrl })`, and add a `redirect` callback that allows the issuer's origin.
-- Protect routes in `middleware.ts` with `auth()`; Pages Router apps use `auth()` in `getServerSideProps`.
+- Protect routes with `auth` in `proxy.ts` on Next.js 16 (`export { auth as proxy } from "@/auth"`), or in `middleware.ts` on Next.js 15 and earlier (`export { auth as middleware } from "@/auth"`). Next.js 16 renamed the file and deprecated `middleware.ts`. Add an `authorized` callback that returns `!!auth` so signed-out users are sent to sign in. Also check `auth()` in server actions and route handlers, which a matcher can miss. Pages Router apps use `auth()` in `getServerSideProps`.
 
 ## Express / Node.js (openid-client v6)
 
@@ -86,6 +88,10 @@ const oidcConfig = {
   scope: "openid profile email",
   // Tokens in memory; the default store is sessionStorage.
   userStore: new WebStorageStateStore({ store: new InMemoryWebStorage() }),
+  // Strip code and state from the URL after sign-in.
+  onSigninCallback: () => {
+    window.history.replaceState({}, document.title, window.location.pathname)
+  },
 }
 ```
 
@@ -119,7 +125,12 @@ Protect routes with HTTP middleware that checks the session before calling the h
 ## Python (Authlib, Flask)
 
 ```python
+import os
+
 from authlib.integrations.flask_client import OAuth
+from flask import redirect, session, url_for
+
+AUTHALLA_ISSUER = os.environ["AUTHALLA_ISSUER"]
 
 oauth = OAuth(app)
 oauth.register(

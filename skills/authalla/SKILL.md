@@ -1,6 +1,6 @@
 ---
 name: authalla
-description: Add Authalla sign-in to an app. Configures the Authalla tenant (branding, custom domain, sender address, social login), creates the OAuth2 app, then analyzes the codebase and implements an OAuth 2.1 / OIDC integration. Use when adding Authalla login to an app, or when configuring an Authalla tenant.
+description: Add Authalla sign-in to an app. Configures the Authalla tenant (branding, custom domain, sender address, social login), creates the OAuth2 app, then analyzes the codebase and implements an OAuth 2.1 / OIDC integration. Use when adding Authalla login to an app.
 metadata:
   author: authalla
   version: "2.0.0"
@@ -26,31 +26,31 @@ claude mcp add --transport http authalla https://api.authalla.com/mcp
 claude mcp login authalla
 ```
 
-then restarts their agent. Sign-in happens in the browser: they sign in to Authalla, approve the consent screen and, with several accounts, pick the one the agent may manage. Other clients: https://docs.authalla.com/docs/mcp-server.
+then restarts their agent. The login opens the browser, where they sign in to Authalla and approve the agent's access. Other clients: https://docs.authalla.com/docs/mcp-server.
 
 **Done when** `get_me` returns the user and their account.
 
 ### 2. Pick the tenant
 
-`get_me` lists the account's tenants; every account starts with one. Ask which to use, or `create_tenant` for a new one (for example one per environment). A new tenant's ID is a generated three-word name such as `brave-otter-lantern`, it allows sign-ups unless `allow_registration` is false, and it signs users in with email and passkeys. Then `select_tenant`, so later tools default to it.
+`get_me` lists the account's tenants; every account starts with one. Ask which to use, or `create_tenant` for a new one (for example one per environment). A tenant's ID is permanent and is its sign-in address (`https://{id}.authalla.com`), so ask whether the user wants to choose it: an adjective and two nouns such as `brave-otter-lantern`, passed as `id`; omitted, it is random. A new tenant allows sign-ups unless `allow_registration` is false, and signs users in with email and passkeys. Then `select_tenant`, so later tools default to it.
 
 Check `get_tenant` against what the user wants and fix it with `update_tenant`:
 
-- **Registration**: whether users can sign up themselves, or must be created first (`create_user`).
+- **Registration**: whether users can sign up themselves, or must be created first (`create_user`). Users moving from another provider are created with `create_user`; to carry over their old user ID, provision them through SCIM instead, whose `externalId` reaches apps as the `external_id` claim when the app allows and requests the `external_id` scope: https://docs.authalla.com/docs/scim.
 - **Product name**: the name users see in sign-in emails, such as `Acme`. Unset, they see the tenant's name.
-- **Authentication methods**: `magic_link` (email sign-in: one email with a one-time code and a link) and `passkeys`. `auth_methods` replaces the whole list. Social login is not a method; it works while the tenant has an enabled connection (step 6).
+- **Authentication methods**: `magic_link` (email sign-in: one email with a one-time code and a link) and `passkeys`. `auth_methods` replaces the whole list; an empty list leaves sign-in to connections only (social or enterprise SSO). Social login is not a method; it works while the tenant has an enabled connection (step 6).
 
 **Done when** the tenant is selected and its registration, product name and methods are what the user asked for.
 
 ### 3. Branding
 
-Ask the user for their colors as hex values; read them from the user, not from their website. `get_theme` shows the current theme, and `update_theme` changes only the fields passed: a brand color, page background and card background, plus corner style, font and default language. For separate dark-mode colors, set `color_mode` to `light_dark` with the `dark_*` fields.
+Ask the user for their colors as hex values; read them from the user, not from their website. `get_theme` shows the current theme, and `update_theme` changes only the fields passed: a brand color, page background and card background, plus corner style, font and default language. The default language applies to the sign-in emails as well as the pages; an app's `ui_locales` still wins. For separate dark-mode colors, set `color_mode` to `light_dark` with the `dark_*` fields.
 
-For a logo or tab icon: `create_logo_upload_url`, upload the file with the `curl` command it gives, then pass the returned `logo_url` to `update_theme`. A public https image URL works too. SVG is not accepted.
+For a logo or tab icon: `create_logo_upload_url`, upload the file with the `curl` command it gives, then pass the returned URL to `update_theme` as `logo_url` for a logo or `icon_url` for the tab icon. A public https image URL works too. SVG is not accepted.
 
 Reference: https://docs.authalla.com/docs/branding
 
-**Done when** `get_theme` shows the user's colors and logo.
+**Done when** `get_theme` shows the user's colors, logo and tab icon.
 
 ### 4. Custom domain
 
@@ -62,7 +62,7 @@ A custom domain such as `auth.example.com` serves the sign-in pages and OAuth2 e
 
 Reference: https://docs.authalla.com/docs/tenant-custom-domains
 
-**Done when** the status is `active`, or the user chose to finish it later. In that case the integration uses the default `{tenant-id}.authalla.com` issuer, and switching later means changing the issuer in the app's config.
+**Done when** the status is `active`, or the user chose to finish it later. In that case the integration uses the default `{tenant-id}.authalla.com` issuer, and switching later means changing the issuer in the app's config. Tell them switching also costs their users: passkeys are bound to the host they were created on, so ones made on `{tenant-id}.authalla.com` stop working on the custom domain, and sessions don't carry over, so everyone signs in again. A domain they will want is best added before real users sign up.
 
 ### 5. Sender address
 
@@ -86,7 +86,9 @@ Providers: `google`, `github`, `microsoft`, `facebook`, `linkedin`, `x`, `discor
 
 Reference: https://docs.authalla.com/docs/sso-connections
 
-**Done when** `list_social_logins` shows each chosen provider with status `active`.
+Enterprise SSO (a company's own OIDC or SAML identity provider, reached by email domain) is set up in the dashboard only; same reference.
+
+**Done when** `list_social_logins` shows each chosen provider with status `active`, or the user chose to finish it in the dashboard.
 
 ### 7. Create the app
 
@@ -99,7 +101,12 @@ Ask what kind of application it is, and its URLs:
 | Mobile or desktop app | `native` | public |
 | Machine-to-machine service, no users | `backend` | `client_credentials` only |
 
-`create_app` with the name, tenant, type, `redirect_uris` and `allowed_logout_uris`, both matched exactly. For local development, `http://localhost/callback` matches any port; host and path must still match. Default scopes are `openid profile email`. Add `offline_access` if the app needs refresh tokens: scopes the app isn't allowed are dropped without an error, so no refresh token arrives.
+`create_app` with the name, tenant, type, `redirect_uris` and `allowed_logout_uris`:
+
+- **Redirect URIs** match exactly, except that an `http` loopback one (`localhost`, `127.0.0.1`, `[::1]`) matches any port: `http://localhost/callback` covers `http://localhost:3000/callback`. Host and path must still match.
+- **Logout URIs** match exactly, port included: register the local one as the app sends it, such as `http://localhost:3000/`.
+- **Scopes** default to `openid profile email`. For refresh tokens the app requests `offline_access` at sign-in; it needs no app setting. Any other scope must be in the app's `scopes`: ones it isn't allowed are dropped without an error.
+- **`require_consent`**: set it when users should approve the app's access on a consent screen first, such as for a third-party app.
 
 For confidential apps the result contains the **client secret, shown once**. Tell the user to save it now in their secret store. Write it only into a gitignored local env file, and only if they ask. If it's lost, `add_app_secret` issues another.
 

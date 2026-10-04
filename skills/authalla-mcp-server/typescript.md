@@ -6,6 +6,7 @@ Replace `ISSUER` (the tenant's issuer), `RESOURCE` (the identifier), the metadat
 
 ```ts
 import express from 'express';
+import { z } from 'zod';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -43,7 +44,7 @@ const app = express();
 app.use(express.json());
 
 // New: tell agents where to sign in (RFC 9728).
-app.get("/.well-known/oauth-protected-resource/mcp", (_req, res) => {
+app.get(new URL(getOAuthProtectedResourceMetadataUrl(RESOURCE)).pathname, (_req, res) => {
   res.json({"resource":"https://mcp.acme.com/mcp","resource_name":"Acme CRM","authorization_servers":["https://acme.authalla.com"],"scopes_supported":["openid","crm:read","crm:write"],"bearer_methods_supported":["header"]});
 });
 
@@ -65,7 +66,7 @@ app.post(RESOURCE.pathname, auth, async (req, res) => {
 app.listen(3000);
 ```
 
-The metadata path is `/.well-known/oauth-protected-resource` followed by the identifier's path. For an identifier ending in `/mcp` it's the route above; for other paths, use the URL `get_resource_server` returned.
+The metadata route's path comes from the identifier (`/.well-known/oauth-protected-resource` followed by its path), so it matches the URL `get_resource_server` returned.
 
 ## Checking a write scope in a tool
 
