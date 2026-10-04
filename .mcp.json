@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "authalla": {
+      "type": "http",
+      "url": "https://api.authalla.com/mcp"
+    }
+  }
+}

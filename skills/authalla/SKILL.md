@@ -19,15 +19,18 @@ Steps 3–6 are optional: ask before each, and skip what the user declines. The 
 
 ### 1. Connect the Authalla MCP server
 
-Check for the Authalla tools (`get_me`, `list_tenants`, `create_app`). If they're missing, the user needs an Authalla account (sign up at https://authalla.com). Add the server:
+Check for the Authalla MCP tools (`get_me`, `list_tenants`, `create_app`). If they're missing, run `claude mcp list` and look for an Authalla server (`https://api.authalla.com/mcp`):
 
-```bash
-claude mcp add --transport http authalla https://api.authalla.com/mcp
-```
+- **Listed as needing authentication**, usually `plugin:authalla:authalla` from the Authalla plugin: you can't sign in for the user. Tell them to run `/mcp`, pick that server, choose **Authenticate**, then sign in to Authalla in the browser and approve the access. Its tools then appear in this session; wait until they're back.
+- **Not listed**: the user needs an Authalla account (sign up at https://authalla.com). Then add the server:
 
-Then stop. You can't sign in for the user, and this session can't see the new server: Claude Code loads MCP servers only when a session starts. Tell the user to start a new Claude Code session in this project, run `/mcp`, pick `authalla`, choose **Authenticate**, then sign in to Authalla in the browser and approve the access. Other clients: https://docs.authalla.com/docs/mcp-server.
+  ```bash
+  claude mcp add --transport http authalla https://api.authalla.com/mcp
+  ```
 
-**Done when** `get_me` returns the user and their account, in the new session.
+  Then stop. This session can't see the new server, because Claude Code loads MCP servers only when a session starts. Tell the user to start a new Claude Code session in this project, run `/mcp`, pick `authalla`, choose **Authenticate**, then sign in and approve. Other clients: https://docs.authalla.com/docs/mcp-server.
+
+**Done when** `get_me` returns the user and their account.
 
 ### 2. Pick the tenant
 
