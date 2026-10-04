@@ -19,14 +19,14 @@ Steps 3–6 are optional: ask before each, and skip what the user declines. The 
 
 ### 1. Connect the Authalla MCP server
 
-Check for the Authalla tools (`get_me`, `list_tenants`, `create_app`). If they're missing, the user needs an Authalla account (sign up at https://authalla.com) and runs:
+Check for the Authalla tools (`get_me`, `list_tenants`, `create_app`). If they're missing, the user needs an Authalla account (sign up at https://authalla.com) and runs this in their own terminal (the login opens a browser sign-in, so it can't run inside the agent):
 
 ```bash
 claude mcp add --transport http authalla https://api.authalla.com/mcp
 claude mcp login authalla
 ```
 
-then restarts their agent. The login opens the browser, where they sign in to Authalla and approve the agent's access. Other clients: https://docs.authalla.com/docs/mcp-server.
+then starts a new agent session. The login opens the browser, where they sign in to Authalla and approve the agent's access. Other clients: https://docs.authalla.com/docs/mcp-server.
 
 **Done when** `get_me` returns the user and their account.
 

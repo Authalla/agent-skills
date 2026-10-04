@@ -17,7 +17,7 @@ The full guide, which is the source of truth when this file and the guide disagr
 
 ### 1. Connect the Authalla MCP server
 
-Check for the Authalla MCP tools (`get_me`, `list_tenants`, `create_resource_server`). If they're missing, ask the user to run this and restart their agent:
+Check for the Authalla MCP tools (`get_me`, `list_tenants`, `create_resource_server`). If they're missing, ask the user to run this in their own terminal (it opens a browser sign-in, so it can't run inside the agent), then start a new session:
 
 ```bash
 claude mcp add --transport http authalla https://api.authalla.com/mcp
@@ -71,14 +71,19 @@ Start the server, then:
 
 1. `curl -i -X POST <identifier>` without a token returns `401` with `WWW-Authenticate: Bearer ... resource_metadata="<metadata URL>"`.
 2. `curl <metadata URL>` returns the metadata document.
-3. Connect an agent: `claude mcp add --transport http <name> <identifier>`, then `claude mcp login <name>`. The user signs in to the tenant in the browser and approves the consent screen.
-4. Ask the agent to use a read tool, then a write tool.
+3. Add the server to the user's agent: `claude mcp add --transport http <name> <identifier>`.
 
-**Done when** all four pass. If sign-in fails, see [Troubleshooting](#troubleshooting).
+**Done when** all three pass. The sign-in is the user's, in step 7.
 
 ### 7. Hand over
 
-Tell the user:
+The sign-in needs the user: it runs in their browser, and a running Claude Code session only sees MCP servers that were configured when it started. Tell the user to:
+
+1. Start a new Claude Code session in this project, run `/mcp`, pick `<name>` and choose **Authenticate**.
+2. Sign in to the tenant in the browser and approve the consent screen. It lists the scopes from step 3.
+3. Ask the agent to use a read tool, then a write tool. If sign-in fails, see [Troubleshooting](#troubleshooting).
+
+Also tell them:
 - Access is revoked per user under **Users → (user) → Connected apps**. The token already issued stays valid until it expires (15 minutes by default), because the server checks tokens locally.
 - If the tenant gets a custom domain later, the issuer changes. Update the metadata and `ISSUER` together.
 
@@ -103,6 +108,6 @@ Access tokens are RS256 JWTs (RFC 9068). Check all of these:
 
 - **`invalid_target`** at sign-in: the `resource` the agent sent isn't a registered identifier. The identifier must match the URL the agent was given character for character, including the path and any trailing slash.
 - **The agent never opens a sign-in**: the server doesn't answer `401` with `resource_metadata`, or the metadata URL isn't served at the path RFC 9728 expects (`/.well-known/oauth-protected-resource` followed by the identifier's path).
-- **The consent screen lists no scopes**, or calls return `403 insufficient_scope`: the user doesn't hold the scope. Grant it on the user or turn on Grant to all users. A scope added to a user reaches the agent at its next sign-in, not at a token refresh: run `claude mcp login <name>` again.
+- **The consent screen lists no scopes**, or calls return `403 insufficient_scope`: the user doesn't hold the scope. Grant it on the user or turn on Grant to all users. A scope added to a user reaches the agent at its next sign-in, not at a token refresh: sign in again from `/mcp` (**Re-authenticate**).
 - **The agent can't connect at all**: it only supports Dynamic Client Registration, which Authalla doesn't offer. Claude, Claude Code and ChatGPT use Client ID Metadata Documents. Check that they're allowed on the tenant (step 4).
 - **`500` instead of `401` on a bad token** (TypeScript): the verifier must throw `InvalidTokenError`; any other error becomes a 500.
