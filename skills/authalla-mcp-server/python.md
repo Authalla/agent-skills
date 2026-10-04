@@ -41,7 +41,7 @@ mcp = MCPServer(
 
 # Existing tools stay registered with @mcp.tool()
 
-app = mcp.streamable_http_app(host="0.0.0.0")  # run: uvicorn server:app
+app = mcp.streamable_http_app(host="0.0.0.0")  # serves /mcp; set streamable_http_path if the identifier's path differs. Run: uvicorn server:app
 # The built-in metadata lists only required_scopes; serve the full document instead.
 app.router.routes[:0] = create_protected_resource_routes(
     resource_url=RESOURCE, authorization_servers=[ISSUER], resource_name="Acme CRM",
