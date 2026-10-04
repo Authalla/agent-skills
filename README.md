@@ -11,6 +11,8 @@ In Claude Code:
 /plugin install authalla@authalla
 ```
 
+The plugin also connects Claude Code to the Authalla MCP server. Run `/mcp`, pick `plugin:authalla:authalla` and choose **Authenticate** to sign in to your Authalla account. If you already added the server yourself with `claude mcp add`, Claude Code keeps using that one.
+
 To get updates automatically, turn on auto-update for the `authalla` marketplace under `/plugin` → Marketplaces. Otherwise run `/plugin marketplace update authalla`.
 
 For other agents (Codex, Cursor, GitHub Copilot and more):
@@ -29,7 +31,7 @@ Set up Authalla authentication for your app through a guided interactive flow. C
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then in a new Claude Code session run `/mcp`, pick `authalla` and choose **Authenticate**
+- The Authalla MCP server, signed in. The Claude Code plugin includes it; otherwise run `claude mcp add --transport http authalla https://api.authalla.com/mcp`. Then run `/mcp`, pick the server and choose **Authenticate**
 
 **Usage:** Once installed, Claude Code will automatically use this skill when you ask it to set up Authalla authentication.
 
@@ -39,6 +41,6 @@ Protect your own MCP server with Authalla: users sign in and approve Claude, Cha
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then in a new Claude Code session run `/mcp`, pick `authalla` and choose **Authenticate**
+- The Authalla MCP server, signed in. The Claude Code plugin includes it; otherwise run `claude mcp add --transport http authalla https://api.authalla.com/mcp`. Then run `/mcp`, pick the server and choose **Authenticate**
 
 **Usage:** ask your agent to "protect my MCP server with Authalla". Guide: [Build an MCP server with Authalla](https://docs.authalla.com/docs/build-an-mcp-server).
