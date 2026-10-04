@@ -5,7 +5,7 @@ Official [Claude Code skills](https://skills.sh) for [Authalla](https://authalla
 ## Install
 
 ```bash
-npx skills add authalla/authalla-skills
+npx skills add authalla/agent-skills
 ```
 
 ## Skills
@@ -16,6 +16,16 @@ Set up Authalla authentication for your app through a guided interactive flow. C
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla CLI: `brew tap authalla/tap && brew install authalla`
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`
 
 **Usage:** Once installed, Claude Code will automatically use this skill when you ask it to set up Authalla authentication.
+
+### authalla-mcp-server
+
+Protect your own MCP server with Authalla: users sign in and approve Claude, ChatGPT and other AI agents before they can call its tools. Registers the server as a resource server with its scopes, adds token verification to your code (TypeScript or Python MCP SDK), and walks you through connecting an agent.
+
+**Prerequisites:**
+- An Authalla account ([sign up](https://authalla.com))
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`
+
+**Usage:** ask your agent to "protect my MCP server with Authalla". Guide: [Build an MCP server with Authalla](https://docs.authalla.com/docs/build-an-mcp-server).
