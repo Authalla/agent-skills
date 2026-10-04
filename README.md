@@ -4,6 +4,15 @@ Official [Claude Code skills](https://skills.sh) for [Authalla](https://authalla
 
 ## Install
 
+In Claude Code:
+
+```
+/plugin marketplace add authalla/agent-skills
+/plugin install authalla@authalla
+```
+
+For other agents (Codex, Cursor, GitHub Copilot and more):
+
 ```bash
 npx skills add authalla/agent-skills
 ```
