@@ -31,9 +31,9 @@ Set up Authalla authentication for your app through a guided interactive flow. C
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server, signed in. The Claude Code plugin includes it; otherwise run `claude mcp add --transport http authalla https://api.authalla.com/mcp`. Then run `/mcp`, pick the server and choose **Authenticate**
+- The Authalla MCP server, signed in. The Claude Code plugin includes it: run `/mcp`, pick the server and choose **Authenticate**. Without the plugin, run `claude mcp add --transport http authalla https://api.authalla.com/mcp` first. Other agents: see [MCP server](https://docs.authalla.com/docs/mcp-server).
 
-**Usage:** Once installed, Claude Code will automatically use this skill when you ask it to set up Authalla authentication.
+**Usage:** once installed, your agent uses this skill when you ask it to set up Authalla authentication.
 
 ### authalla-mcp-server
 
@@ -41,6 +41,6 @@ Protect your own MCP server with Authalla: users sign in and approve Claude, Cha
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server, signed in. The Claude Code plugin includes it; otherwise run `claude mcp add --transport http authalla https://api.authalla.com/mcp`. Then run `/mcp`, pick the server and choose **Authenticate**
+- The Authalla MCP server, signed in. The Claude Code plugin includes it: run `/mcp`, pick the server and choose **Authenticate**. Without the plugin, run `claude mcp add --transport http authalla https://api.authalla.com/mcp` first. Other agents: see [MCP server](https://docs.authalla.com/docs/mcp-server).
 
 **Usage:** ask your agent to "protect my MCP server with Authalla". Guide: [Build an MCP server with Authalla](https://docs.authalla.com/docs/build-an-mcp-server).
