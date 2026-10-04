@@ -1,6 +1,6 @@
 # Authalla Agent Skills
 
-Official [Claude Code skills](https://skills.sh) for [Authalla](https://authalla.com) — the OAuth2/OIDC authentication platform.
+Official agent skills for [Authalla](https://authalla.com), the OAuth2/OIDC authentication platform.
 
 ## Install
 
@@ -11,11 +11,15 @@ In Claude Code:
 /plugin install authalla@authalla
 ```
 
+To get updates automatically, turn on auto-update for the `authalla` marketplace under `/plugin` → Marketplaces. Otherwise run `/plugin marketplace update authalla`.
+
 For other agents (Codex, Cursor, GitHub Copilot and more):
 
 ```bash
 npx skills add authalla/agent-skills
 ```
+
+Use one of the two. If you installed with `npx skills` before and move to the plugin, remove those skills first (`npx skills remove authalla authalla-mcp-server`), or Claude Code loads each skill twice.
 
 ## Skills
 
