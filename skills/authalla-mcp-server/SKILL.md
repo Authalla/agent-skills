@@ -17,14 +17,15 @@ The full guide, which is the source of truth when this file and the guide disagr
 
 ### 1. Connect the Authalla MCP server
 
-Check for the Authalla MCP tools (`get_me`, `list_tenants`, `create_resource_server`). If they're missing, ask the user to run this in their own terminal (it opens a browser sign-in, so it can't run inside the agent), then start a new session:
+Check for the Authalla MCP tools (`get_me`, `list_tenants`, `create_resource_server`). If they're missing, add the server:
 
 ```bash
 claude mcp add --transport http authalla https://api.authalla.com/mcp
-claude mcp login authalla
 ```
 
-**Done when** `get_me` returns the user's account.
+Then stop. You can't sign in for the user, and this session can't see the new server: Claude Code loads MCP servers only when a session starts. Tell the user to start a new Claude Code session in this project, run `/mcp`, pick `authalla`, choose **Authenticate**, then sign in to Authalla in the browser and approve the access.
+
+**Done when** `get_me` returns the user's account, in the new session.
 
 ### 2. Read the MCP server
 
@@ -71,17 +72,17 @@ Start the server, then:
 
 1. `curl -i -X POST <identifier>` without a token returns `401` with `WWW-Authenticate: Bearer ... resource_metadata="<metadata URL>"`.
 2. `curl <metadata URL>` returns the metadata document.
-3. Add the server to the user's agent: `claude mcp add --transport http <name> <identifier>`.
+3. `claude mcp add --transport http <name> <identifier>`, then `claude mcp get <name>` shows the server.
 
-**Done when** all three pass. The sign-in is the user's, in step 7.
+**Done when** all three pass. The user signs in in step 7.
 
 ### 7. Hand over
 
-The sign-in needs the user: it runs in their browser, and a running Claude Code session only sees MCP servers that were configured when it started. Tell the user to:
+As in step 1, the user signs in to the new server from a new session. Tell them to:
 
 1. Start a new Claude Code session in this project, run `/mcp`, pick `<name>` and choose **Authenticate**.
 2. Sign in to the tenant in the browser and approve the consent screen. It lists the scopes from step 3.
-3. Ask the agent to use a read tool, then a write tool. If sign-in fails, see [Troubleshooting](#troubleshooting).
+3. Ask the agent to use a read tool, then a write tool. If the sign-in or a tool call fails, give the error to the agent; it should use [Troubleshooting](#troubleshooting).
 
 Also tell them:
 - Access is revoked per user under **Users → (user) → Connected apps**. The token already issued stays valid until it expires (15 minutes by default), because the server checks tokens locally.
@@ -107,7 +108,7 @@ Access tokens are RS256 JWTs (RFC 9068). Check all of these:
 ### Troubleshooting
 
 - **`invalid_target`** at sign-in: the `resource` the agent sent isn't a registered identifier. The identifier must match the URL the agent was given character for character, including the path and any trailing slash.
-- **The agent never opens a sign-in**: the server doesn't answer `401` with `resource_metadata`, or the metadata URL isn't served at the path RFC 9728 expects (`/.well-known/oauth-protected-resource` followed by the identifier's path).
+- **`/mcp` offers no Authenticate for the server**, or shows it as failed: the server doesn't answer `401` with `resource_metadata`, or the metadata URL isn't served at the path RFC 9728 expects (`/.well-known/oauth-protected-resource` followed by the identifier's path).
 - **The consent screen lists no scopes**, or calls return `403 insufficient_scope`: the user doesn't hold the scope. Grant it on the user or turn on Grant to all users. A scope added to a user reaches the agent at its next sign-in, not at a token refresh: sign in again from `/mcp` (**Re-authenticate**).
 - **The agent can't connect at all**: it only supports Dynamic Client Registration, which Authalla doesn't offer. Claude, Claude Code and ChatGPT use Client ID Metadata Documents. Check that they're allowed on the tenant (step 4).
 - **`500` instead of `401` on a bad token** (TypeScript): the verifier must throw `InvalidTokenError`; any other error becomes a 500.
