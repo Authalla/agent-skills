@@ -16,7 +16,7 @@ Set up Authalla authentication for your app through a guided interactive flow. C
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then `claude mcp login authalla`
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then in a new Claude Code session run `/mcp`, pick `authalla` and choose **Authenticate**
 
 **Usage:** Once installed, Claude Code will automatically use this skill when you ask it to set up Authalla authentication.
 
@@ -26,6 +26,6 @@ Protect your own MCP server with Authalla: users sign in and approve Claude, Cha
 
 **Prerequisites:**
 - An Authalla account ([sign up](https://authalla.com))
-- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then `claude mcp login authalla`
+- The Authalla MCP server: `claude mcp add --transport http authalla https://api.authalla.com/mcp`, then in a new Claude Code session run `/mcp`, pick `authalla` and choose **Authenticate**
 
 **Usage:** ask your agent to "protect my MCP server with Authalla". Guide: [Build an MCP server with Authalla](https://docs.authalla.com/docs/build-an-mcp-server).

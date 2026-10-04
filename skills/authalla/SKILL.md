@@ -19,16 +19,15 @@ Steps 3–6 are optional: ask before each, and skip what the user declines. The 
 
 ### 1. Connect the Authalla MCP server
 
-Check for the Authalla tools (`get_me`, `list_tenants`, `create_app`). If they're missing, the user needs an Authalla account (sign up at https://authalla.com) and runs this in their own terminal (the login opens a browser sign-in, so it can't run inside the agent):
+Check for the Authalla tools (`get_me`, `list_tenants`, `create_app`). If they're missing, the user needs an Authalla account (sign up at https://authalla.com). Add the server:
 
 ```bash
 claude mcp add --transport http authalla https://api.authalla.com/mcp
-claude mcp login authalla
 ```
 
-then starts a new agent session. The login opens the browser, where they sign in to Authalla and approve the agent's access. Other clients: https://docs.authalla.com/docs/mcp-server.
+Then stop. You can't sign in for the user, and this session can't see the new server: Claude Code loads MCP servers only when a session starts. Tell the user to start a new Claude Code session in this project, run `/mcp`, pick `authalla`, choose **Authenticate**, then sign in to Authalla in the browser and approve the access. Other clients: https://docs.authalla.com/docs/mcp-server.
 
-**Done when** `get_me` returns the user and their account.
+**Done when** `get_me` returns the user and their account, in the new session.
 
 ### 2. Pick the tenant
 
