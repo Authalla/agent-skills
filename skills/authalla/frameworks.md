@@ -2,6 +2,15 @@
 
 Starting points for common stacks. Each one points the library at the issuer and lets it read the discovery document. Check the library's current docs for the installed version before copying; APIs shift between major versions.
 
+## Next.js 16+ App Router (@authalla/nextjs)
+
+Authalla's own SDK, when it's on npm (`npm view @authalla/nextjs version` answers). It keeps the tokens on the server in an encrypted cookie, refreshes them, and includes the User API. Follow its README: https://github.com/Authalla/authalla-nextjs#readme
+
+- The redirect URI to register on the app is `{app URL}/api/auth/callback`, and the logout URI is the app's URL.
+- Env: `AUTHALLA_ISSUER`, `AUTHALLA_CLIENT_ID`, `AUTHALLA_CLIENT_SECRET` (confidential apps), `AUTHALLA_APP_URL`, and `AUTHALLA_SECRET` (`openssl rand -base64 32`).
+
+When it isn't on npm, or the app is on Next.js 15 or earlier, use Auth.js below.
+
 ## Next.js (Auth.js v5)
 
 ```ts
