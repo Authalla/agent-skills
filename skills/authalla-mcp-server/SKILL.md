@@ -4,7 +4,6 @@ description: Protect your own MCP server with Authalla, so users sign in and app
 metadata:
   author: authalla
   version: "1.0.0"
-allowed-tools: Bash, AskUserQuestion, Read, Glob, Grep, Edit, Write
 ---
 
 # Protect an MCP server with Authalla

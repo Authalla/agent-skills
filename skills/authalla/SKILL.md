@@ -3,8 +3,7 @@ name: authalla
 description: Add Authalla sign-in to an app. Configures the Authalla tenant (branding, custom domain, sender address, social login), creates the OAuth2 app, then analyzes the codebase and implements an OAuth 2.1 / OIDC integration. Use when adding Authalla login to an app.
 metadata:
   author: authalla
-  version: "2.0.0"
-allowed-tools: Bash, AskUserQuestion, Read, Glob, Grep, Edit, Write
+  version: "2.1.0"
 ---
 
 # Authalla
@@ -14,6 +13,15 @@ Authalla is a hosted OAuth2/OIDC provider. Each **tenant** is one issuer with it
 You configure Authalla through the Authalla MCP tools, then write the integration in the user's code. To protect the user's own MCP server with Authalla, use the `authalla-mcp-server` skill instead.
 
 Steps 3–6 are optional: ask before each, and skip what the user declines. The MCP tools' own schemas describe every parameter; this file covers order and the gotchas. For anything the tools don't cover, send the user to the dashboard at https://app.authalla.com.
+
+**Just sign-in first.** When the user asks only to add sign-in, or names a tenant to use (as the Authalla dashboard's onboarding prompt does), get sign-in working before anything else: steps 1, 2, 7 and 8, then 9. Use the tenant they named without asking again. Offer branding, a custom domain, a sender address and social login (steps 3–6) once sign-in works.
+
+## What this skill does
+
+- Changes Authalla only through the Authalla MCP tools, in the account the user signed in to, and reads the tenant's public discovery document. Beyond those, it only installs the sign-in library through the app's own package manager.
+- Changes the user's code only after they confirm the approach (integration.md, step 2), and asks before adding dependencies.
+- Keeps secrets out of code, chat and committed files (step 7).
+- Runs commands only through the agent's normal permission prompts: it grants itself no tools.
 
 ## Steps
 
@@ -108,6 +116,8 @@ Ask what kind of application it is, and its URLs:
 | Mobile or desktop app | `native` | public |
 | Machine-to-machine service, no users | `backend` | `client_credentials` only |
 
+Start with an app for local development, named for it (such as `Acme (development)`), with the localhost URIs the app runs on. Production gets its own app later, with its own URIs and secret.
+
 `create_app` with the name, tenant, type, `redirect_uris` and `allowed_logout_uris`:
 
 - **Redirect URIs** match exactly, except that an `http` loopback one (`localhost`, `127.0.0.1`, `[::1]`) matches any port: `http://localhost/callback` covers `http://localhost:3000/callback`. Host and path must still match.
@@ -115,7 +125,7 @@ Ask what kind of application it is, and its URLs:
 - **Scopes** default to `openid profile email`. For refresh tokens the app requests `offline_access` at sign-in; it needs no app setting. Any other scope must be in the app's `scopes`: ones it isn't allowed are dropped without an error.
 - **`require_consent`**: set it when users should approve the app's access on a consent screen first, such as for a third-party app.
 
-For confidential apps the result contains the **client secret, shown once**. Tell the user to save it now in their secret store. Write it only into a gitignored local env file, and only if they ask. If it's lost, `add_app_secret` issues another.
+For confidential apps the result contains the **client secret, shown once**. For the development app, put it where the app reads it locally: a local env file such as `.env.local`, after checking that git ignores it (`git check-ignore <file>`; if it doesn't, add the file to `.gitignore` first). Don't repeat the secret in chat, and don't write it anywhere else: not in code, an env example file or a committed file. For a production app, give the user the variable name and let them put the secret in their hosting's secret settings themselves. If a secret is lost, `add_app_secret` issues another.
 
 A `spa` also needs its origin (such as `https://app.example.com`) in the tenant's **Allowed origins**, which only the dashboard sets: https://app.authalla.com → Tenants → (tenant) → General → Allowed origins.
 
@@ -136,4 +146,6 @@ Tell the user:
 - The app's name, `client_id` and type, its redirect and logout URIs.
 - Files created or changed, and the environment variables to set.
 - Anything left pending (DNS records, a social login secret to paste, allowed origins), with where to finish it.
-- How to test: run the app, sign in, sign out, then sign in again in a private window.
+- How to test: run the app, sign in, sign out, then sign in again in a private window. The Authalla dashboard's onboarding page (https://app.authalla.com/onboarding) ticks off each step of the first sign-in, and shows why one failed.
+
+If the first sign-in fails, find out why before changing code: Authalla's error page names the problem, and `get_app` shows the registered URIs. The usual cause is a redirect URI that differs from the one the app sends; fix the registration with `update_app` (it replaces the whole list, so pass the existing URIs too) after telling the user what you're changing.
